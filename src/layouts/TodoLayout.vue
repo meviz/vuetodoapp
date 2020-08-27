@@ -65,7 +65,7 @@
                                         </v-icon>
                                     </v-list-item-icon>
                                     <v-list-item-content>
-                                      <v-list-item-title v-text="item.title"></v-list-item-title>
+                                    <v-list-item-title v-text="item.title"></v-list-item-title>
                                     </v-list-item-content>
                                 </template>
                                 {{item.type}}
@@ -92,15 +92,9 @@
                         </v-tooltip>
                         <span>{{activeItem.title}}</span>
                         <v-spacer></v-spacer>
-                        <div class="d-flex">
-                          <v-btn small fab @click="openEditDialog(activeItem)">
+                        <v-btn small fab @click="openEditDialog(activeItem)">
                             <v-icon v-text="'mdi-pencil'"></v-icon>
-                          </v-btn>
-                          <v-btn color="red" class="ml-4" small fab @click="deleteTodo(activeItem)">
-                            <v-icon color="white" v-text="'mdi-delete'"></v-icon>
-                          </v-btn>
-                        </div>
-                        
+                        </v-btn>
                     </v-card-title>
                     <v-divider></v-divider>
                     <v-card-text>{{activeItem.text}}</v-card-text>
@@ -153,6 +147,9 @@
                     </div>
                 </v-container>
             </v-card-text>
+            <v-card-actions>
+                
+            </v-card-actions>
         </v-card>
     </v-dialog>
     
@@ -169,9 +166,9 @@
 </template>
 
 <script>
+  import { db } from '../firebase/firebase';
   import { required } from 'vee-validate/dist/rules'
   import { extend, ValidationObserver, ValidationProvider, setInteractionMode } from 'vee-validate'
-  import { db } from '../firebase/firebase';
 
   setInteractionMode('eager')
 
@@ -181,10 +178,6 @@
   })
 
   export default {
-    components: {
-      ValidationProvider,
-      ValidationObserver,
-    },
     props: {
       source: String,
     },
@@ -243,15 +236,11 @@
 
         saveTodo(){
           console.log(this.btnType);
-          this.$refs.observer.validate().then(valid=>{
-            if(valid){
-              if(this.btnType && this.btnType == 'add'){
-                this.addTodo();
-              }else if(this.btnType && this.btnType == 'edit'){
-                this.editTodo();
-              }
-            }
-          });
+          if(this.btnType && this.btnType == 'add'){
+            this.addTodo();
+          }else if(this.btnType && this.btnType == 'edit'){
+            this.editTodo();
+          }
         },
 
         editTodo(item){
@@ -278,20 +267,6 @@
           }).then(()=>{
             self.dialog = !self.dialog;
             self.getTodo();
-          });
-        },
-
-        deleteTodo(item){
-          var self = this
-          var data = {
-            title: null,
-            text: null,
-            type: null,
-          }
-
-          db.ref('/' + self.uid + '/' + self.itemIndex).set(data).then(()=>{
-            self.getTodo();
-            self.setActive(null,null);
           });
         },
 

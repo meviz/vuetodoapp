@@ -1,22 +1,31 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
+import Signin from '../views/Signin.vue'
+import Signup from '../views/Signup.vue'
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 Vue.use(VueRouter)
 
   const routes = [
   {
-    path: '/',
-    name: 'Home',
-    component: Home
+    path: '*',
+    name: 'home',
+    component: Home,
+    beforeEnter: ifAuthenticated,
   },
   {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+    path: '/signin',
+    name: 'signin',
+    component: Signin,
+    beforeEnter: ifNotAuthenticated,
+  },
+  {
+    path: '/signup',
+    name: 'signup',
+    component: Signup,
+    beforeEnter: ifNotAuthenticated,
   }
 ]
 
@@ -24,6 +33,32 @@ const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   routes
+});
+
+const ifNotAuthenticated = (to, from, next) => {
+  if (store.getters.status) {
+    next()
+    return
+  }
+  next('/')
+}
+
+const ifAuthenticated = (to, from, next) => {
+  const token = localStorage.getItem('token');
+  if (!store.getters.status){
+    next()
+    return
+  }
+  next('/signin');
+}
+
+router.beforeEach((to,from,next)=>{
+  const token = localStorage.getItem('token');
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  console.log(token,requiresAuth);
+
+  if(requiresAuth && !token) next('signin');
+  else next();
 })
 
 export default router
